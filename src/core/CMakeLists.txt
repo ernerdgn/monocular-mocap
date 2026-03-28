@@ -7,11 +7,13 @@ target_include_directories(core INTERFACE
     ${PROJECT_SOURCE_DIR}/src
 )
 
-# link
-find_package(glm CONFIG REQUIRED)
-find_package(spdlog CONFIG REQUIRED)
+# find_package(glm CONFIG REQUIRED)
+# find_package(spdlog CONFIG REQUIRED)
+# find_package(nlohmann_json CONFIG REQUIRED)
 
+# link
 target_link_libraries(core INTERFACE
     glm::glm
-    spdlog::spdlog    
+    spdlog::spdlog_header_only
+    nlohmann_json::nlohmann_json
 )

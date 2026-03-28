@@ -1,0 +1,16 @@
+{
+    "camera": {
+        "device_id": 0,
+        "width": 1280,
+        "height": 720,
+        "target_fps": 30
+    },
+    "logging": {
+        "level": "trace",
+        "save_to_file": true
+    },
+    "model_paths": {
+        "smplx_onnx": "models/smplx_model.onnx",
+        "detection_onnx": "models/hmr2_0.onnx"
+    }
+}

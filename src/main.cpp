@@ -1,72 +1,72 @@
 #include "core/logger.hpp"
+#include "core/config.hpp"
 #include "capture/camera.hpp"
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <chrono>
-#include <string>
+#include "ui/window_manager.hpp"
+#include <filesystem>
+#include <imgui.h>
 
-int main()
-{
+int main() {
     mocap::Logger::Init();
-    MOCAP_INFO("MoCap System Starting...");
-
-    mocap::Camera cam;
     
-    auto open_result = cam.Open(0);
-    if (!open_result.is_ok())
-    {
-        MOCAP_CRITICAL("Shutting down: {}", open_result.error());
+    // 1. Load Config
+    std::string config_path = "config.json";
+    if (!std::filesystem::exists(config_path)) {
+        config_path = "../../config.json"; 
+    }
+    auto config_res = mocap::Config::Load(config_path);
+    auto cfg = config_res.is_ok() ? config_res.value() : mocap::Config();
+
+    // 2. Initialize the Window & UI
+    mocap::WindowManager window;
+    auto win_res = window.Initialize(1600, 900, "Monocular MoCap Tool");
+    if (!win_res.is_ok()) {
+        MOCAP_CRITICAL("Window Error: {}", win_res.error());
         return -1;
     }
 
-    MOCAP_INFO("Press 'ESC' in the video window to quit.");
+    // 3. Open Camera
+    mocap::Camera cam;
+    auto open_result = cam.Open(cfg.camera.device_id);
+    if (!open_result.is_ok()) {
+        MOCAP_ERROR("Camera Warning: {}", open_result.error());
+        // We won't crash here; we still want to show the UI even if the camera fails!
+    }
 
-    // fps track
-    int frame_count = 0;
-    float fps = 0.0f;
-    auto time_start = std::chrono::high_resolution_clock::now();
+    MOCAP_INFO("Entering main application loop...");
 
-    while (true)
-    {
-        auto frame_result = cam.ReadFrame();
+    // 4. Main Render Loop
+    while (!window.ShouldClose()) {
+        // Start the UI frame
+        window.BeginFrame();
+
+        // --- UI PANELS GO HERE ---
         
-        if (!frame_result.is_ok())
-        {
-            MOCAP_ERROR("Frame drop: {}", frame_result.error());
-            break;
+        // Example: Controls Panel
+        ImGui::Begin("Controls");
+        ImGui::Text("Application State: IDLE");
+        ImGui::Separator();
+        if (ImGui::Button("Start Capture")) {
+            MOCAP_INFO("Capture button pressed!");
         }
+        ImGui::End();
 
-        cv::Mat frame = frame_result.value();
-
-        // get fps
-        frame_count++;
-        auto time_now = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<float> elapsed = time_now - time_start;
-        
-        // update every 1s
-        if (elapsed.count() >= 1.0f)
-        {
-            fps = frame_count / elapsed.count();
-            frame_count = 0;
-            time_start = time_now;
+        // Example: Camera Feed Panel
+        ImGui::Begin("Camera Feed");
+        if (cam.ReadFrame().is_ok()) {
+            ImGui::Text("Camera is actively reading frames behind the scenes.");
+            ImGui::Text("Next step: Convert cv::Mat to an OpenGL Texture!");
+        } else {
+            ImGui::TextColored(ImVec4(1, 0, 0, 1), "Camera Offline.");
         }
+        ImGui::End();
 
-        // draw fps
-        std::string fps_text = "FPS: " + std::to_string(static_cast<int>(fps));
-        cv::putText(frame, fps_text, cv::Point(10, 30), 
-                    cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 255, 0), 2);
+        // -------------------------
 
-        cv::imshow("Monocular MoCap - Raw Feed", frame);
-
-        if (cv::waitKey(1) == 27)
-        {
-            MOCAP_INFO("ESC pressed. Exiting loop.");
-            break;
-        }
+        // Render the frame to the screen
+        window.EndFrame();
     }
 
     cam.Close();
-    cv::destroyAllWindows();
     MOCAP_INFO("System shutdown complete.");
     return 0;
 }

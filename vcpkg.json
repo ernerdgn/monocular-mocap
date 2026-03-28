@@ -5,7 +5,13 @@
     "opencv4",
     "glm",
     "glfw3",
-    "imgui",
+    {
+      "name": "imgui",
+      "features": [
+        "glfw-binding",
+        "opengl3-binding",
+        "docking-experimental"
+      ]},
     "imguizmo",
     "onnxruntime",
     "spdlog",

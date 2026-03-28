@@ -2,10 +2,13 @@
 add_library(capture camera.cpp)
 
 # allow others to get this dude
-target_include_directories(capture PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(capture PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src
+)
 
-# get cv
-find_package(OpenCV CONFIG REQUIRED)
+# # get cv
+# find_package(OpenCV CONFIG REQUIRED)
 
 # link
 target_link_libraries(capture 
