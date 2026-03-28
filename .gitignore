@@ -1,0 +1,68 @@
+# prereqs
+*.d
+
+# compiled files
+*.slo
+*.lo
+*.o
+*.obj
+
+# precompiled files
+*.gch
+*.pch
+
+# compiled dynamic libs
+*.so
+*.dylib
+*.dll
+
+# fortran module files
+*.mod
+*.smod
+
+# compiled static libs
+*.lai
+*.la
+*.a
+*.lib
+
+# execs
+*.exe
+*.out
+*.app
+
+# debug
+*.pdb
+*.ilk
+*.idb
+
+# cmake build
+/build/
+/out/
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# vcpkg specific
+/vcpkg_installed/
+/vcpkg_packages/
+.vcpkg-root
+
+# vs
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.*
+*.user
+*.suo
+
+# vsc
+.vscode/
+
+# python/conda
+__pycache__/
+*.py[cod]

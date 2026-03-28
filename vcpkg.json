@@ -1,0 +1,16 @@
+{
+  "name": "monocular-mocap",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "opencv4",
+    "glm",
+    "glfw3",
+    "imgui",
+    "imguizmo",
+    "onnxruntime",
+    "spdlog",
+    "nlohmann-json",
+    "msgpack",
+    "catch2"
+  ]
+}
