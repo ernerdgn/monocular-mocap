@@ -1,0 +1,73 @@
+# .clang-format
+BasedOnStyle:  LLVM
+
+# Indentation
+IndentWidth:             4
+TabWidth:                4
+UseTab:                  Never
+ContinuationIndentWidth: 4
+IndentCaseLabels:        true
+NamespaceIndentation:    None
+
+# Column limit
+ColumnLimit: 120
+
+# Braces — Allman style: opening brace on its own line
+BreakBeforeBraces: Allman
+
+# Short constructs — never collapse to one line
+AllowShortBlocksOnASingleLine:      Never
+AllowShortFunctionsOnASingleLine:   None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine:        false
+AllowShortCaseLabelsOnASingleLine:   false
+
+# Pointer and reference alignment
+PointerAlignment:    Left
+ReferenceAlignment:  Left
+
+# Spacing
+SpaceAfterCStyleCast:        true
+SpaceBeforeParens:           ControlStatements
+SpaceInEmptyParentheses:     false
+SpacesInAngles:              Never
+SpacesInContainerLiterals:   false
+SpacesInParentheses:         false
+SpacesInSquareBrackets:      false
+
+# Constructor initializers
+BreakConstructorInitializers:                    BeforeComma
+ConstructorInitializerAllOnOneLineOrOnePerLine:  true
+ConstructorInitializerIndentWidth:               4
+
+# Template declarations
+AlwaysBreakTemplateDeclarations: Yes
+
+# Includes — sort and group
+SortIncludes:    CaseSensitive
+IncludeBlocks:   Regroup
+IncludeCategories:
+  - Regex:    '^"'       # Project headers first
+    Priority: 1
+  - Regex:    '^<[a-z_/]+\.h(pp)?>' # Third-party headers
+    Priority: 2
+  - Regex:    '^<'       # Standard library last
+    Priority: 3
+
+# Comments
+AlignTrailingComments:
+  Kind:            Always
+  OverEmptyLines:  1
+
+# Namespace closing comment
+FixNamespaceComments: true
+
+# Alignment
+AlignConsecutiveAssignments:
+  Enabled:          true
+  AcrossEmptyLines: false
+  AcrossComments:   false
+AlignConsecutiveMacros:
+  Enabled:          true
+  AcrossEmptyLines: false
+  AcrossComments:   false

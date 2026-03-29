@@ -2,21 +2,47 @@
   "name": "monocular-mocap",
   "version-string": "0.1.0",
   "dependencies": [
-    "opencv4",
-    "glm",
-    "glfw3",
+    {
+      "name": "opencv4",
+      "version>=": "4.8.0"
+    },
+    {
+      "name": "glm",
+      "version>=": "1.0.3"
+    },
+    {
+      "name": "glfw3",
+      "version>=": "3.3.8"
+    },
     {
       "name": "imgui",
       "features": [
         "glfw-binding",
         "opengl3-binding",
         "docking-experimental"
-      ]},
-    "imguizmo",
-    "onnxruntime",
-    "spdlog",
-    "nlohmann-json",
-    "msgpack",
-    "catch2"
-  ]
+      ],
+      "version>=": "1.89.9"
+    },
+    {
+      "name": "imguizmo",
+      "version>=": "2024-05-29#2"
+    },
+    {
+      "name": "onnxruntime",
+      "version>=": "1.23.2"
+    },
+    {
+      "name": "spdlog",
+      "version>=": "1.12.0"
+    },
+    {
+      "name": "nlohmann-json",
+      "version>=": "3.11.2"
+    },
+    {
+      "name": "msgpack",
+      "version>=": "6.0.0"
+    }
+  ],
+  "builtin-baseline": "b5d1a94fb7f88fd835e360fd23a45a09ceedbf48"
 }

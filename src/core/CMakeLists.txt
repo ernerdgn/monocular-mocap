@@ -1,19 +1,19 @@
-# core module is a header-only interface lib
-add_library(core INTERFACE)
-
-# headers
-target_include_directories(core INTERFACE 
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}/src
+add_library(core STATIC 
+    config.cpp
+    logger.cpp
 )
 
-# find_package(glm CONFIG REQUIRED)
-# find_package(spdlog CONFIG REQUIRED)
-# find_package(nlohmann_json CONFIG REQUIRED)
+target_include_directories(core PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src
+)
 
-# link
-target_link_libraries(core INTERFACE
-    glm::glm
-    spdlog::spdlog_header_only
-    nlohmann_json::nlohmann_json
+target_link_libraries(core 
+    PUBLIC 
+        glm::glm 
+        spdlog::spdlog_header_only
+        nlohmann_json::nlohmann_json
+    PRIVATE 
+        mocap_warnings
+        mocap_sanitizers
 )

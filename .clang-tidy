@@ -1,0 +1,76 @@
+# .clang-tidy
+
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  misc-*,
+  -modernize-use-trailing-return-type,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-magic-numbers,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -readability-identifier-length,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -misc-non-private-member-variables-in-classes
+
+# Treat all enabled check violations as errors.
+WarningsAsErrors: "*"
+
+# Suppress warnings from headers in these paths.
+# Third-party headers should never trigger our checks.
+HeaderFilterRegex: "^(?!.*(vcpkg_installed|third_party)).*$"
+
+CheckOptions:
+  # ---- Naming conventions ----
+  - key:   readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key:   readability-identifier-naming.StructCase
+    value: CamelCase
+  - key:   readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key:   readability-identifier-naming.EnumConstantCase
+    value: CamelCase
+
+  - key:   readability-identifier-naming.FunctionCase
+    value: camelCase
+  - key:   readability-identifier-naming.MethodCase
+    value: camelCase
+
+  - key:   readability-identifier-naming.ParameterCase
+    value: camelCase
+  - key:   readability-identifier-naming.LocalVariableCase
+    value: camelCase
+
+  # Member variables use m_ prefix
+  - key:   readability-identifier-naming.MemberCase
+    value: camelCase
+  - key:   readability-identifier-naming.MemberPrefix
+    value: m_
+
+  # Static member variables use s_ prefix
+  - key:   readability-identifier-naming.StaticMemberCase
+    value: camelCase
+  - key:   readability-identifier-naming.StaticMemberPrefix
+    value: s_
+
+  # Constants use k_ prefix
+  - key:   readability-identifier-naming.ConstexprVariableCase
+    value: camelCase
+  - key:   readability-identifier-naming.ConstexprVariablePrefix
+    value: k_
+
+  - key:   readability-identifier-naming.NamespaceCase
+    value: lower_case
+
+  # ---- Performance ----
+  - key:   performance-for-range-copy.WarnOnAllAutoCopies
+    value: "true"
+
+  # ---- Modernize ----
+  - key:   modernize-use-default-member-init.UseAssignment
+    value: "true"

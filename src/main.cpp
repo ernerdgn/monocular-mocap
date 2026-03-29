@@ -5,12 +5,13 @@
 #include <filesystem>
 #include <imgui.h>
 
-int main() {
+int main()
+{
     mocap::Logger::Init();
     
-    // 1. Load Config
     std::string config_path = "config.json";
-    if (!std::filesystem::exists(config_path)) {
+    if (!std::filesystem::exists(config_path))
+    {
         config_path = "../../config.json"; 
     }
     auto config_res = mocap::Config::Load(config_path);

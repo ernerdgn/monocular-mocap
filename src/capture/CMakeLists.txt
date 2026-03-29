@@ -15,4 +15,7 @@ target_link_libraries(capture
     PUBLIC 
         core
         ${OpenCV_LIBS}
+    PRIVATE
+        mocap_warnings
+        mocap_sanitizers
 )
