@@ -13,6 +13,7 @@ target_link_directories(ui
         glfw
         imgui::imgui
         OpenGL::GL
+        glad::glad
     PRIVATE
         mocap_warnings
         mocap_sanitizers

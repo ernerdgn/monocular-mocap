@@ -3,7 +3,7 @@
 
 namespace mocap {
 
-    void Logger::Init()
+    void Logger::init()
     {
         spdlog::set_pattern("%^[%T] %n: %v%$");
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();

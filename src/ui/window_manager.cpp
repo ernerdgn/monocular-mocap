@@ -1,5 +1,6 @@
 #include "window_manager.hpp"
 #include "core/logger.hpp"
+#include <glad/glad.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -10,10 +11,10 @@ namespace mocap {
 
     WindowManager::~WindowManager()
     {
-        Shutdown();
+        shutdown();
     }
 
-    Result<void> WindowManager::Initialize(int width, int height, const std::string& title)
+    Result<void> WindowManager::initialize(int width, int height, const std::string& title)
     {
         MOCAP_INFO("Initializing GLFW and OpenGL...");
 
@@ -34,6 +35,13 @@ namespace mocap {
 
         glfwMakeContextCurrent(m_window);
         glfwSwapInterval(1);  // vsync
+
+        // glad init
+        MOCAP_INFO("Loading OpenGL functions via GLAD...");
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+        {
+            return Result<void>::fail("Failed to initialize GLAD.");
+        }
 
         // init dearest imgui
         MOCAP_INFO("Initializing Dear ImGui...");
@@ -58,7 +66,7 @@ namespace mocap {
         return Result<void>::ok();
     }
 
-    void WindowManager::Shutdown()
+    void WindowManager::shutdown()
     {
         if (m_isInitialized)
         {
@@ -73,12 +81,12 @@ namespace mocap {
         }
     }
 
-    bool WindowManager::ShouldClose() const
+    bool WindowManager::shouldClose() const
     {
         return m_isInitialized && glfwWindowShouldClose(m_window);
     }
 
-    void WindowManager::BeginFrame() 
+    void WindowManager::beginFrame() 
     {
         glfwPollEvents();
 
@@ -90,7 +98,7 @@ namespace mocap {
         ImGui::DockSpaceOverViewport(0, nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
     }
 
-    void WindowManager::EndFrame()
+    void WindowManager::endFrame()
     {
         ImGui::Render();
 

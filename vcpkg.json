@@ -42,7 +42,9 @@
     {
       "name": "msgpack",
       "version>=": "6.0.0"
-    }
+    },
+    { "name": "msgpack", "version>=": "6.0.0" },
+    { "name": "glad", "version>=": "0.1.36" }
   ],
   "builtin-baseline": "b5d1a94fb7f88fd835e360fd23a45a09ceedbf48"
 }

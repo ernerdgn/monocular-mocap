@@ -12,21 +12,21 @@ namespace mocap {
         ~WindowManager();
 
         // init glfw, ogl4.5 and imgui
-        Result<void> Initialize(int width, int height, const std::string& title);
+        Result<void> initialize(int width, int height, const std::string& title);
 
         // cleanup
-        void Shutdown();
+        void shutdown();
 
         // exit check
-        bool ShouldClose() const;
+        bool shouldClose() const;
         
         // imgui frame start
-        void BeginFrame();
+        void beginFrame();
         
         // render imgui to ogl buffer and swap to display
-        void EndFrame();
+        void endFrame();
 
-        GLFWwindow* GetHandle() const { return m_window; }
+        GLFWwindow* getHandle() const { return m_window; }
 
         private:
         GLFWwindow* m_window;

@@ -4,7 +4,7 @@
 
 namespace mocap {
 
-    Result<Config> Config::Load(const std::string& path)
+    Result<Config> Config::load(const std::string& path)
     {
         std::ifstream file(path);
         if (!file.is_open()) return Result<Config>("Could not open config file: " + path);

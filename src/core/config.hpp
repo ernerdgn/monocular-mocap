@@ -18,7 +18,7 @@ namespace mocap {
         std::string smplx_path;
         std::string detection_path;
 
-        static Result<Config> Load(const std::string& path);
+        static Result<Config> load(const std::string& path);
     };
 
 }
