@@ -2,6 +2,7 @@
 #include "core/config.hpp"
 #include "capture/camera.hpp"
 #include "ui/window_manager.hpp"
+#include "ui/texture.hpp"
 #include <filesystem>
 #include <imgui.h>
 
@@ -33,6 +34,7 @@ int main()
     }
 
     MOCAP_INFO("Entering main application loop...");
+    mocap::Texture cameraTexture;
 
     while (!window.shouldClose())
     {
@@ -48,15 +50,41 @@ int main()
         ImGui::End();
 
         ImGui::Begin("Camera Feed");
+        // check for a new frame
         auto maybe_frame = cam.getLatestFrame();
         if (maybe_frame.has_value())
         {
-            ImGui::Text("Camera is streaming in the background at max speed!");
-            ImGui::Text("Frame Width: %d, Height: %d", maybe_frame->cols, maybe_frame->rows);
+            cameraTexture.update(maybe_frame.value());
+        }
+
+        if (cameraTexture.isValid())
+        {
+            ImVec2 avail_size = ImGui::GetContentRegionAvail();
+            
+            float aspect = (float)cameraTexture.getWidth() / (float)cameraTexture.getHeight();
+            ImVec2 render_size;
+            if (avail_size.x / aspect <= avail_size.y)
+            {
+                render_size.x = avail_size.x;
+                render_size.y = avail_size.x / aspect;
+            }
+            else
+            {
+                render_size.y = avail_size.y;
+                render_size.x = avail_size.y * aspect;
+            }
+
+            ImVec2 cursor_pos = ImGui::GetCursorPos();
+            cursor_pos.x += (avail_size.x - render_size.x) * 0.5f;
+            cursor_pos.y += (avail_size.y - render_size.y) * 0.5f;
+            ImGui::SetCursorPos(cursor_pos);
+
+            ImTextureID tex_id = (ImTextureID)(intptr_t)cameraTexture.getId();
+            ImGui::Image(tex_id, render_size);
         }
         else
         {
-            ImGui::TextColored(ImVec4(1, 1, 0, 1), "Waiting for next frame...");
+            ImGui::TextColored(ImVec4(1, 1, 0, 1), "Waiting for camera...");
         }
         
         ImGui::End();
