@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 #set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL$<$<CONFIG:Debug>:Debug>")
 project(MonocularMoCap CXX)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -55,4 +56,38 @@ target_link_libraries(MonocularMoCap PRIVATE
 if(MOCAP_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+# ==========================================
+# CLANG TOOLING TARGETS
+# ==========================================
+
+# gather all cpp sources and headers
+file(GLOB_RECURSE ALL_CXX_SOURCE_FILES 
+    "${CMAKE_SOURCE_DIR}/src/*.cpp" 
+    "${CMAKE_SOURCE_DIR}/src/*.hpp"
+)
+
+# setup clang format target
+find_program(CLANG_FORMAT_EXE NAMES clang-format clang-format-17 clang-format-16)
+if(CLANG_FORMAT_EXE)
+    add_custom_target(format
+        COMMAND ${CLANG_FORMAT_EXE} -i -style=file ${ALL_CXX_SOURCE_FILES}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Running clang-format to format source files..."
+    )
+else()
+    message(WARNING "clang-format not found. 'format' target will not be created.")
+endif()
+
+# setup clang-tidy target
+find_program(CLANG_TIDY_EXE NAMES clang-tidy clang-tidy-17 clang-tidy-16)
+if(CLANG_TIDY_EXE)
+    add_custom_target(tidy
+        COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR} ${ALL_CXX_SOURCE_FILES}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Running clang-tidy to check for warnings..."
+    )
+else()
+    message(WARNING "clang-tidy not found. 'tidy' target will not be created.")
 endif()

@@ -1,6 +1,9 @@
 add_library(core STATIC 
     config.cpp
     logger.cpp
+    json_glm.hpp
+    msgpack_glm.hpp
+    types.hpp
 )
 
 target_include_directories(core PUBLIC 

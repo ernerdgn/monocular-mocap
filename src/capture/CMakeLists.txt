@@ -2,7 +2,8 @@
 add_library(capture
     camera_source.cpp
     capture_thread.cpp
-    file_source.cpp 
+    file_source.cpp
+    device_enumerator.cpp
 )
 
 # allow others to get this dude

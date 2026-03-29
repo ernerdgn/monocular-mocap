@@ -1,18 +1,19 @@
 #pragma once
-#include "ui_types.hpp"
 #include "capture/capture_thread.hpp"
+#include "ui_types.hpp"
 
-namespace mocap {
+namespace mocap
+{
 
-    class StatusPanel : public IPanel
-    {
-        public:
-        StatusPanel(CaptureThread& captureSystem, const AppState& state);
-        void render() override;
-        
-        private:
-        CaptureThread& m_captureSystem;
-        const AppState& m_state;
-    };
+class StatusPanel : public IPanel
+{
+  public:
+    StatusPanel(CaptureThread& captureSystem, const AppState& state);
+    void render() override;
 
-}
+  private:
+    CaptureThread& m_captureSystem;
+    const AppState& m_state;
+};
+
+} // namespace mocap

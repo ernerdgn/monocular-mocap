@@ -1,19 +1,20 @@
 #pragma once
 
-namespace mocap {
+namespace mocap
+{
 
-    enum class AppState
-    {
-        IDLE,
-        CAPTURING,
-        REVIEWING
-    };
+// enum class AppState
+// {
+//     IDLE,
+//     CAPTURING,
+//     REVIEWING
+// };
 
-    class IPanel
-    {
-        public:
-        virtual ~IPanel() = default;
-        virtual void render() = 0;
-    };
+class IPanel
+{
+  public:
+    virtual ~IPanel()     = default;
+    virtual void render() = 0;
+};
 
-} 
+} // namespace mocap

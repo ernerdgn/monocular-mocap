@@ -1,21 +1,29 @@
 #pragma once
-#include <memory>
-#include <vector>
-#include <string>
 #include <spdlog/spdlog.h>
 
-namespace mocap {
+#include <memory>
+#include <string>
+#include <vector>
 
-    class Logger
-    {
-    public:
-        static void init();
+namespace mocap
+{
 
-        static std::vector<std::string> getLogs();
-        static void clearLogs();
-    };
+struct LogEntry
+{
+    spdlog::level::level_enum level;
+    std::string text;
+};
 
-}
+class Logger
+{
+  public:
+    static void init();
+
+    static std::vector<LogEntry> getLogs();
+    static void clearLogs();
+};
+
+} // namespace mocap
 
 // macro defs
 #define MOCAP_TRACE(...)    spdlog::trace(__VA_ARGS__)
