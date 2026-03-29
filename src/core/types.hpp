@@ -1,52 +1,64 @@
 #pragma once
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
 #include <opencv2/opencv.hpp>
-#include <array>
+#include <glm/glm.hpp>
 #include <vector>
 
-namespace mocap
-{
+namespace mocap {
 
-// constants for smpl-x / hmr2 reqs
-constexpr size_t k_JointCount          = 55;
-constexpr size_t k_FaceExpressionCount = 50;
+    enum class AppState
+    {
+        IDLE,
+        CAPTURING,
+        REVIEWING
+    };
 
-struct JointPose
-{
-    glm::quat rotation    = glm::identity<glm::quat>();
-    glm::vec3 translation = glm::vec3(.0f);
-};
+    struct CaptureFrame
+    {
+        cv::Mat image;
+        double timestamp = 0.0;
+        int frameIndex = 0;
+    };
 
-struct PoseFrame
-{
-    float timestamp = .0f;
-    std::array<JointPose, k_JointCount> joints;
-    std::array<float, k_FaceExpressionCount> faceExpressions;
-    float confidence = .0f;
-};
+    // standard coco 17-keypoint skeleton map
+    enum class BodyJoint
+    {
+        NOSE = 0,
+        LEFT_EYE = 1,
+        RIGHT_EYE = 2,
+        LEFT_EAR = 3,
+        RIGHT_EAR = 4,
+        LEFT_SHOULDER = 5,
+        RIGHT_SHOULDER = 6,
+        LEFT_ELBOW = 7,
+        RIGHT_ELBOW = 8,
+        LEFT_WRIST = 9,
+        RIGHT_WRIST = 10,
+        LEFT_HIP = 11,
+        RIGHT_HIP = 12,
+        LEFT_KNEE = 13,
+        RIGHT_KNEE = 14,
+        LEFT_ANKLE = 15,
+        RIGHT_ANKLE = 16,
+        COUNT = 17 // array sizing helper
+    };
 
-struct CaptureFrame
-{
-    cv::Mat image;
-    double timestamp = 0.0;
-    int frameIndex = 0;
-};
+    // single detected 2d point on screen
+    struct Joint2D
+    {
+        glm::vec2 position{0.0f, 0.0f}; // pixel coordinates (x, y)
+        float confidence = 0.0f; // 0.0 (lost) to 1.0 (certain)
+    };
 
-enum class AppState
-{
-    IDLE,
-    CAPTURING,
-    REVIEWING,
-    EXPORTING,
-    ERROR
-};
-enum class ExportFormat
-{
-    BVH,
-    FBX_UNITY,
-    FBX_UNREAL,
-    VMC_OSC
-};
+    // complete output of detection phase for single frame
+    struct DetectionResult
+    {
+        std::vector<Joint2D> bodyJoints;
+        double timestamp = 0.0;
+        int frameIndex = 0;
+        float overallConfidence = 0.0f; // average confidence of all body joints
+        
+        // constructor that pre-allocs the 17 joints
+        DetectionResult() : bodyJoints(static_cast<size_t>(BodyJoint::COUNT)) {}
+    };
 
 }

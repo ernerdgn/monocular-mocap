@@ -4,6 +4,8 @@
 #include "ui/main_ui.hpp"
 #include "ui/texture.hpp"
 #include "ui/window_manager.hpp"
+#include "detection/onnx_detector.hpp"
+#include "detection/detection_thread.hpp"
 
 #include <nfd.hpp>
 
@@ -26,6 +28,33 @@ int main()
 
     mocap::CaptureThread captureSystem;
     mocap::Texture cameraTexture;
+    
+    // get model path
+    std::string modelPath = "yolov8n-pose.onnx";
+    if (!std::filesystem::exists(modelPath))
+    {
+        modelPath = "../../yolov8n-pose.onnx"; // check root from build/Debug
+    }
+    
+    if (!std::filesystem::exists(modelPath))
+    {
+        modelPath = "../yolov8n-pose.onnx"; // check root from build/
+    }
+
+    std::unique_ptr<mocap::DetectionThread> detectionSystem;
+    
+    try
+    {
+        // use resolved path
+        auto detector = std::make_unique<mocap::OnnxDetector>(modelPath);
+        detectionSystem = std::make_unique<mocap::DetectionThread>(captureSystem, std::move(detector));
+        detectionSystem->start();
+    }
+    catch (const std::exception& e)
+    {
+        MOCAP_ERROR("AI Initialization Failed: {}", e.what());
+        MOCAP_WARN("Application will continue without AI capabilities.");
+    }
 
     // main_ui
     mocap::MainUI appUI(captureSystem, cameraTexture, cfg.camera.device_id);
@@ -44,5 +73,6 @@ int main()
     captureSystem.stop();
     NFD::Quit();
     MOCAP_INFO("System shutdown complete.");
+    if (detectionSystem) detectionSystem->stop();
     return 0;
 }

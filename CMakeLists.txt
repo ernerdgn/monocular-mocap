@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-#set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL$<$<CONFIG:Debug>:Debug>")
+set(VCPKG_LIBRARY_LINKAGE "dynamic")
 project(MonocularMoCap CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -13,7 +13,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 option(MOCAP_ENABLE_SANITIZERS  "Enable ASan + UBSan in Debug builds (non-MSVC)" ON)
 option(MOCAP_BUILD_TESTS        "Build the test suite"                            ON)
 
-# global msvc spesific
+# global msvc specific
 if(MSVC)
     add_compile_options(/utf-8)   
     add_compile_options(/wd4459)  
@@ -33,11 +33,13 @@ find_package(imgui CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(nfd CONFIG REQUIRED)
+find_package(onnxruntime CONFIG REQUIRED) # Added back for AI
 
 # sub dirs
 add_subdirectory(src/core)
 add_subdirectory(src/capture)
 add_subdirectory(src/ui)
+add_subdirectory(src/detection) # Added back for AI
 
 # main exec
 add_executable(MonocularMoCap src/main.cpp)
@@ -45,12 +47,20 @@ target_link_libraries(MonocularMoCap PRIVATE
     core 
     capture 
     ui 
-    glfw 
+    detection # Added back for AI
+    glfw
     imgui::imgui 
     OpenGL::GL
     glad::glad
     nfd::nfd
+    onnxruntime::onnxruntime # Added back for AI
 )
+
+# if(MSVC)
+#     # 1. OPT:NOREF stops the linker from deleting "unused" code
+#     # 2. INCLUDE forces the linker to pull in the ONNX entry point
+#     target_link_options(MonocularMoCap PRIVATE "/OPT:NOREF" "/INCLUDE:OrtGetApiBase")
+# endif()
 
 # tests
 if(MOCAP_BUILD_TESTS)
@@ -80,7 +90,7 @@ else()
     message(WARNING "clang-format not found. 'format' target will not be created.")
 endif()
 
-# setup clang-tidy target
+# setup clang tidy target
 find_program(CLANG_TIDY_EXE NAMES clang-tidy clang-tidy-17 clang-tidy-16)
 if(CLANG_TIDY_EXE)
     add_custom_target(tidy
@@ -91,3 +101,4 @@ if(CLANG_TIDY_EXE)
 else()
     message(WARNING "clang-tidy not found. 'tidy' target will not be created.")
 endif()
+
