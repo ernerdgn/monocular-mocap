@@ -103,7 +103,7 @@ void ControlsPanel::render()
     if (ImGui::Button("Stop Capture / Close File"))
     {
         m_captureSystem.stop();
-        m_state = AppState::IDLE;
+        m_state = (m_state == AppState::CAPTURING) ? AppState::REVIEWING : AppState::IDLE;
     }
 
     ImGui::End();
