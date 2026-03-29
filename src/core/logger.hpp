@@ -1,5 +1,7 @@
 #pragma once
 #include <memory>
+#include <vector>
+#include <string>
 #include <spdlog/spdlog.h>
 
 namespace mocap {
@@ -8,6 +10,9 @@ namespace mocap {
     {
     public:
         static void init();
+
+        static std::vector<std::string> getLogs();
+        static void clearLogs();
     };
 
 }

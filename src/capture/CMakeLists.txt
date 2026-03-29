@@ -1,5 +1,9 @@
 # creating cap lib
-add_library(capture camera.cpp)
+add_library(capture
+    camera_source.cpp
+    capture_thread.cpp
+    file_source.cpp 
+)
 
 # allow others to get this dude
 target_include_directories(capture PUBLIC

@@ -31,6 +31,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glad CONFIG REQUIRED)
+find_package(nfd CONFIG REQUIRED)
 
 # sub dirs
 add_subdirectory(src/core)
@@ -47,6 +48,7 @@ target_link_libraries(MonocularMoCap PRIVATE
     imgui::imgui 
     OpenGL::GL
     glad::glad
+    nfd::nfd
 )
 
 # tests
