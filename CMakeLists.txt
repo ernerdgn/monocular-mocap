@@ -33,13 +33,21 @@ find_package(imgui CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(nfd CONFIG REQUIRED)
-find_package(onnxruntime CONFIG REQUIRED) # Added back for AI
+# --- MANUAL ONNX RUNTIME SETUP ---
+set(ONNX_DIR "D:/software/onnxruntime-win-x64-1.17.1")
+
+add_library(onnx_manual UNKNOWN IMPORTED)
+set_target_properties(onnx_manual PROPERTIES
+    IMPORTED_LOCATION "${ONNX_DIR}/lib/onnxruntime.lib"
+    INTERFACE_INCLUDE_DIRECTORIES "${ONNX_DIR}/include"
+)
+# ---------------------------------
 
 # sub dirs
 add_subdirectory(src/core)
 add_subdirectory(src/capture)
 add_subdirectory(src/ui)
-add_subdirectory(src/detection) # Added back for AI
+add_subdirectory(src/detection)
 
 # main exec
 add_executable(MonocularMoCap src/main.cpp)
@@ -47,13 +55,13 @@ target_link_libraries(MonocularMoCap PRIVATE
     core 
     capture 
     ui 
-    detection # Added back for AI
+    detection
     glfw
-    imgui::imgui 
+    imgui::imgui
     OpenGL::GL
     glad::glad
     nfd::nfd
-    onnxruntime::onnxruntime # Added back for AI
+    onnx_manual
 )
 
 # if(MSVC)
@@ -101,4 +109,3 @@ if(CLANG_TIDY_EXE)
 else()
     message(WARNING "clang-tidy not found. 'tidy' target will not be created.")
 endif()
-

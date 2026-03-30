@@ -11,7 +11,7 @@ target_include_directories(detection PUBLIC .)
 target_link_libraries(detection 
     PUBLIC 
         core
-        onnxruntime::onnxruntime
+        onnx_manual
         ${OpenCV_LIBS}
     PRIVATE 
         mocap_warnings
