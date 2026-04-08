@@ -105,7 +105,7 @@ class Result<void>
     static Result<void> fail(std::string error_msg)
     {
         return err(std::move(error_msg));
-    } // Alias for old code
+    }
 
     bool is_ok() const
     {

@@ -1,6 +1,7 @@
 #include "onnx_detector.hpp"
 #include "core/logger.hpp"
 #include <filesystem>
+#include <opencv2/imgproc.hpp>
 
 namespace mocap {
 
@@ -71,14 +72,97 @@ Result<DetectionResult> OnnxDetector::processFrame(const std::shared_ptr<Capture
 {
     if (!frame || frame->image.empty())
     {
-        return Result<DetectionResult>::err("Empty frame provided to detector");
+        return Result<DetectionResult>::err("Empty frame received");
     }
+
+    try
+    {
+        ImageInfo info;
+        std::vector<float> inputBlob = preprocess(frame->image, info);
+
+        // prep onnx input tensor
+        Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+        
+        Ort::Value inputTensor = Ort::Value::CreateTensor<float>(
+            memoryInfo, 
+            inputBlob.data(), 
+            inputBlob.size(), 
+            m_inputShape.data(), 
+            m_inputShape.size()
+        );
+
+        // run inference
+        auto outputTensors = m_session->Run(
+            Ort::RunOptions{nullptr},
+            m_inputNodeNames.data(),
+            &inputTensor,
+            1,
+            m_outputNodeNames.data(),
+            m_outputNodeNames.size()
+        );
+
+        MOCAP_INFO("Inference success!");
+
+        DetectionResult result;
+        return Result<DetectionResult>(result);
+
+    }
+    catch (const std::exception& e)
+    {
+        MOCAP_ERROR("Detection error: {}", e.what());
+        return Result<DetectionResult>::err(e.what());
+    }
+}
+
+std::vector<float> OnnxDetector::preprocess(const cv::Mat& frame, ImageInfo& info)
+{
+    // record metadata for coord mapping
+    info.originalWidth = frame.cols;
+    info.originalHeight = frame.rows;
+
+    // calculate scaling to fit 640x640 while keeping aspect ratio
+    int targetSize = 640;
+    info.scale = std::min(targetSize / (float)frame.cols, targetSize / (float)frame.rows);
     
-    DetectionResult emptyResult;
-    emptyResult.timestamp = frame->timestamp;
-    emptyResult.frameIndex = frame->frameIndex;
+    int newUnpadW = static_cast<int>(std::round(frame.cols * info.scale));
+    int newUnpadH = static_cast<int>(std::round(frame.rows * info.scale));
+
+    // calculate padding
+    int padW = targetSize - newUnpadW;
+    int padH = targetSize - newUnpadH;
+    info.padX = padW / 2;
+    info.padY = padH / 2;
+
+    // resize
+    cv::Mat resized;
+    cv::resize(frame, resized, cv::Size(newUnpadW, newUnpadH), 0, 0, cv::INTER_LINEAR);
+
+    // add padding
+    cv::Mat canvas;
+    int top = info.padY;
+    int bottom = targetSize - newUnpadH - top;
+    int left = info.padX;
+    int right = targetSize - newUnpadW - left;
+    cv::copyMakeBorder(resized, canvas, top, bottom, left, right, cv::BORDER_CONSTANT, cv::Scalar(114, 114, 114));
+
+    // bgr->rgb and normalization
+    cv::Mat rgb;
+    cv::cvtColor(canvas, rgb, cv::COLOR_BGR2RGB);
+    rgb.convertTo(rgb, CV_32FC3, 1.0f / 255.0f);
+
+    // hwc->chw
+    // vector of 1 228 800 floats (3*640*640)
+    std::vector<float> inputBlob(3 * targetSize * targetSize);
     
-    return Result<DetectionResult>::ok(emptyResult);
+    // use cv to split the 3-channel image directly to vectors memory
+    std::vector<cv::Mat> channels(3);
+    for (int i = 0; i < 3; ++i)
+    {
+        channels[i] = cv::Mat(targetSize, targetSize, CV_32FC1, &inputBlob[i * targetSize * targetSize]);
+    }
+    cv::split(rgb, channels);
+
+    return inputBlob;
 }
 
 }
