@@ -27,17 +27,47 @@ int main()
     mocap::CaptureThread captureSystem;
     mocap::Texture cameraTexture;
     
-    // get model path
-    std::string modelPath = "yolov8n-pose.onnx";
-    if (!std::filesystem::exists(modelPath)) modelPath = "../../yolov8n-pose.onnx";
-    if (!std::filesystem::exists(modelPath)) modelPath = "../yolov8n-pose.onnx";
-
-    // create detector
-    auto detector = std::make_unique<mocap::OnnxDetector>(modelPath);
+    // get model path from config, fallback to default if missing
+    std::string modelPath = cfg.detection_path.empty() ? "yolov8n-pose.onnx" : cfg.detection_path;
     
+    // check dirs
+    if (!std::filesystem::exists(modelPath))
+    {
+        if (std::filesystem::exists("../../" + modelPath)) modelPath = "../../" + modelPath;
+        else if (std::filesystem::exists("../" + modelPath)) modelPath = "../" + modelPath;
+    }
+
+    std::unique_ptr<mocap::IDetector> detector;
+    
+    if (!std::filesystem::exists(modelPath))
+    {
+        // ERROR MSGS
+        MOCAP_ERROR("CRITICAL: AI Model file not found at '{}'!", modelPath);
+        MOCAP_ERROR("Please download the YOLOv8-pose model from:");
+        MOCAP_ERROR("https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8n-pose.onnx");
+        MOCAP_ERROR("And place it in the application root directory.");
+        MOCAP_WARN("Application will continue without AI capabilities.");
+    }
+    
+    else
+    {
+        try // create detector
+        {
+            detector = std::make_unique<mocap::OnnxDetector>(modelPath);
+        }
+
+        catch (const std::exception& e) // f*ck...
+        {
+            MOCAP_ERROR("AI Initialization Failed: {}", e.what());
+        }
+    }
+
     // create detection thread and give it to the detector
     mocap::DetectionThread detectionThread(captureSystem, std::move(detector));
-    detectionThread.start(); // run!
+    if (detectionThread.getLatestResult() || std::filesystem::exists(modelPath)) // safety check to ensure valid setup
+    {
+        detectionThread.start(); 
+    }
 
     // pass thread reference to ui
     mocap::MainUI appUI(captureSystem, detectionThread, cameraTexture, cfg.camera.device_id);

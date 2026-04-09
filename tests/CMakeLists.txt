@@ -12,17 +12,20 @@ add_executable(mocap_tests
     main_test.cpp
     test_concurrent_queue.cpp
     test_result.cpp
+    test_detection.cpp
 )
 
 target_link_libraries(mocap_tests
     PRIVATE
         Catch2::Catch2WithMain
-        core                     
+        core
+        detection
+        capture
         mocap_warnings
         mocap_sanitizers
 )
 
-# Register with CTest
+# register with CTest
 include(CTest)
 include(Catch)
 catch_discover_tests(mocap_tests)

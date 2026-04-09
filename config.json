@@ -10,7 +10,7 @@
         "save_to_file": true
     },
     "model_paths": {
-        "smplx_onnx": "models/smplx_model.onnx",
-        "detection_onnx": "models/hmr2_0.onnx"
+        "smplx_onnx": "smplx.onnx",
+        "detection_onnx": "yolov8n-pose.onnx"
     }
 }
