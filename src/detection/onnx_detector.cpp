@@ -1,5 +1,6 @@
 #include "onnx_detector.hpp"
 #include "core/logger.hpp"
+#include "yolov8_joint_map.hpp"
 #include <filesystem>
 #include <opencv2/imgproc.hpp>
 
@@ -101,12 +102,79 @@ Result<DetectionResult> OnnxDetector::processFrame(const std::shared_ptr<Capture
             m_outputNodeNames.size()
         );
 
-        MOCAP_INFO("Inference success!");
+        // post processing
+        float* outputData = outputTensors[0].GetTensorMutableData<float>();
+        
+        //const int numFeatures = 56;  // 4 (box) + 1 (obj conf) + 17*3 (kpts)
+        const int numAnchors = 8400; // yolov8n default grid size
+
+        int bestAnchor = -1;
+        float bestConf = .0f;
+
+        // single anchor nms
+        // obj confidence is feature index 4- memory layout: data[feature * anchors + anchor]
+        for (int a = 0; a < numAnchors; ++a)
+        {
+            float conf = outputData[4 * numAnchors + a];
+            if (conf > bestConf)
+            {
+                bestConf = conf;
+                bestAnchor = a;
+            }
+        }
 
         DetectionResult result;
+        
+        // safety check for all joints start cleanly lost (0 confidence)
+        for (auto& joint : result.bodyJoints)
+        {
+            joint.position = {.0f, .0f};
+            joint.confidence = .0f;
+        }
+
+        // extract and transform keypoints
+        const float CONFIDENCE_THRESHOLD = .3f; // TODO?can be pulled to config later
+        
+        if (bestAnchor >= 0 && bestConf >= CONFIDENCE_THRESHOLD)
+        {
+            float totalConfidence = .0f;
+            int validJoints = 0;
+            // layout per keypoint: X, Y, Confidence
+            for (int k = 0; k < 17; ++k)
+            {
+                int baseFeatureIdx = 5 + (k * 3);
+                
+                float kx    = outputData[(baseFeatureIdx + 0) * numAnchors + bestAnchor];
+                float ky    = outputData[(baseFeatureIdx + 1) * numAnchors + bestAnchor];
+                float kconf = outputData[(baseFeatureIdx + 2) * numAnchors + bestAnchor];
+
+                // invert letterbox transform
+                float origX = (kx - info.padX) / info.scale;
+                float origY = (ky - info.padY) / info.scale;
+
+                // normalize to 0.0->1.0 range based on original frame size
+                float normX = origX / static_cast<float>(info.originalWidth);
+                float normY = origY / static_cast<float>(info.originalHeight);
+
+                // map to app skeleton
+                int appIdx = k_cocoToAppJoint[k];
+                if (appIdx >= 0 && appIdx < result.bodyJoints.size()) // -1 : joint is ignored
+                {
+                    result.bodyJoints[appIdx].position = glm::vec2(normX, normY);
+                    result.bodyJoints[appIdx].confidence = kconf;
+                    
+                    totalConfidence += kconf;
+                    validJoints++;
+                }
+            }
+
+            if (validJoints > 0) result.overallConfidence = totalConfidence / validJoints;
+        }
+
         return Result<DetectionResult>(result);
 
     }
+    
     catch (const std::exception& e)
     {
         MOCAP_ERROR("Detection error: {}", e.what());

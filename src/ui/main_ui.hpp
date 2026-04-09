@@ -1,5 +1,6 @@
 #pragma once
 #include "capture/capture_thread.hpp"
+#include "detection/detection_thread.hpp"
 #include "ui/texture.hpp"
 #include "ui_types.hpp"
 
@@ -11,7 +12,7 @@ namespace mocap
 class MainUI
 {
   public:
-    MainUI(CaptureThread& captureSystem, Texture& cameraTexture, int defaultCameraId);
+    MainUI(CaptureThread& captureSystem, DetectionThread& detectionThread, Texture& cameraTexture, int defaultCameraId);
     void render();
 
   private:

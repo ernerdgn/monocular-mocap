@@ -7,8 +7,8 @@
 
 namespace mocap {
 
-ControlsPanel::ControlsPanel(CaptureThread& captureSystem, AppState& state, int defaultCameraId)
-    : m_captureSystem(captureSystem), m_state(state), m_selectedCameraId(defaultCameraId)
+ControlsPanel::ControlsPanel(CaptureThread& captureSystem, DetectionThread& detectionSystem, AppState& state, int defaultCameraId)
+    : m_captureSystem(captureSystem), m_detectionSystem(detectionSystem), m_state(state), m_selectedCameraId(defaultCameraId)
     {
         m_availableCameras = DeviceEnumerator::getAvailableCameras();
     
@@ -104,6 +104,65 @@ void ControlsPanel::render()
     {
         m_captureSystem.stop();
         m_state = (m_state == AppState::CAPTURING) ? AppState::REVIEWING : AppState::IDLE;
+    }
+
+    // ai telemetry dashboard
+    ImGui::Separator();
+    ImGui::Spacing();
+    ImGui::TextDisabled("AI Telemetry");
+    ImGui::Spacing();
+
+    // display detection fps
+    ImGui::Text("AI Speed: %.1f FPS", m_detectionSystem.getFPS());
+
+    auto maybe_result = m_detectionSystem.getLatestResult();
+    if (maybe_result.has_value() && maybe_result.value().overallConfidence > 0.0f)
+    {
+        const auto& result = maybe_result.value();
+        
+        // display overall confidence
+        ImGui::Text("Overall Confidence: %.0f%%", result.overallConfidence * 100.0f);
+        ImGui::Spacing();
+
+        // display per-joint table
+        if (ImGui::BeginTable("JointTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchSame))
+        {
+            ImGui::TableSetupColumn("Joint");
+            ImGui::TableSetupColumn("Confidence");
+            ImGui::TableHeadersRow();
+
+            // 17 standard joints map according to BodyJoint enum
+            const char* jointNames[17] = {
+                "Nose", "L Eye", "R Eye", "L Ear", "R Ear", 
+                "L Shoulder", "R Shoulder", "L Elbow", "R Elbow", 
+                "L Wrist", "R Wrist", "L Hip", "R Hip", 
+                "L Knee", "R Knee", "L Ankle", "R Ankle"
+            };
+            
+            for (int i = 0; i < 17; ++i) 
+            {
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", jointNames[i]);
+                
+                ImGui::TableNextColumn();
+                float conf = result.bodyJoints[i].confidence;
+                
+                // i like rainbows
+                if (conf > 0.7f) ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "%.2f", conf);
+                else if (conf > 0.4f) ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%.2f", conf);
+                else ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "%.2f", conf);
+            }
+
+            ImGui::EndTable();
+        }
+    }
+
+    else
+    {
+        // no-detection clear state
+        ImGui::Spacing();
+        ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "No person detected in frame.");
     }
 
     ImGui::End();

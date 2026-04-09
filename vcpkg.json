@@ -10,7 +10,9 @@
         "png",
         "tiff",
         "webp",
-        "win32ui"
+        "win32ui",
+        "ffmpeg",
+        "msmf"
       ]
     },
     {
