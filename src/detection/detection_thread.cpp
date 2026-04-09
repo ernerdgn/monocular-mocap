@@ -33,14 +33,14 @@ std::optional<DetectionResult> DetectionThread::getLatestResult()
 {
     if (!m_resultQueue) return std::nullopt;
 
-    std::optional<DetectionResult> latest;
+    //std::optional<DetectionResult> latest;
     std::optional<DetectionResult> current;
     // drain queue to get new result
     while ((current = m_resultQueue->try_pop()).has_value())
     {
-        latest = current;
+        m_lastResultCache = current;
     }
-    return latest;
+    return m_lastResultCache;
 }
 
 void DetectionThread::threadLoop(std::stop_token stoken)

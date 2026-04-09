@@ -35,7 +35,10 @@ private:
     std::atomic<float> m_currentFps{0.0f};
     
     // track to dont run ai on the exact same frame again
-    int m_lastProcessedFrame = -1; 
+    int m_lastProcessedFrame = -1;
+
+    // internal cache
+    std::optional<DetectionResult> m_lastResultCache;
 };
 
 }
