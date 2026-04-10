@@ -8,12 +8,12 @@ namespace mocap
 class StatusPanel : public IPanel
 {
   public:
-    StatusPanel(CaptureThread& captureSystem, const AppState& state);
-    void render() override;
+    StatusPanel(CaptureThread& captureSystem);
+    void render(ApplicationState& state) override;
 
   private:
     CaptureThread& m_captureSystem;
-    const AppState& m_state;
+    //const AppState& m_state;
 };
 
 } // namespace mocap

@@ -1,5 +1,6 @@
 #pragma once
 #include "ui_types.hpp"
+#include "application_state.hpp"
 
 namespace mocap
 {
@@ -8,7 +9,7 @@ class ConsolePanel : public IPanel
 {
   public:
     ConsolePanel();
-    void render() override;
+    void render(ApplicationState& state) override;
 
   private:
     bool m_autoScroll;

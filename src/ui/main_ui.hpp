@@ -16,7 +16,7 @@ class MainUI
     void render();
 
   private:
-    AppState m_currentState;
+    ApplicationState m_appState;
     std::vector<std::unique_ptr<IPanel>> m_panels;
 };
 } // namespace mocap

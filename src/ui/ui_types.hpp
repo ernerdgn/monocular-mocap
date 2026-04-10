@@ -1,4 +1,5 @@
 #pragma once
+#include "application_state.hpp"
 
 namespace mocap
 {
@@ -14,7 +15,7 @@ class IPanel
 {
   public:
     virtual ~IPanel()     = default;
-    virtual void render() = 0;
+    virtual void render(ApplicationState& state) = 0;
 };
 
 } // namespace mocap

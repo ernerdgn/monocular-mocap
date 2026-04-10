@@ -17,8 +17,8 @@ static const std::vector<std::pair<BodyJoint, BodyJoint>> SKELETON_BONES = {
     {BodyJoint::RIGHT_HIP, BodyJoint::RIGHT_KNEE}, {BodyJoint::RIGHT_KNEE, BodyJoint::RIGHT_ANKLE}
 };
 
-ViewportPanel::ViewportPanel(CaptureThread& captureSystem, DetectionThread& detectionSystem, Texture& texture, AppState& state)
-    : m_captureSystem(captureSystem), m_detectionSystem(detectionSystem), m_texture(texture), m_state(state)
+ViewportPanel::ViewportPanel(CaptureThread& captureSystem, DetectionThread& detectionSystem, Texture& texture)
+    : m_captureSystem(captureSystem), m_detectionSystem(detectionSystem), m_texture(texture)
 {
 }
 
@@ -29,7 +29,7 @@ ImU32 ViewportPanel::getConfidenceColor(float confidence) const
     return IM_COL32(255, 0, 0, 255); //r
 }
 
-void ViewportPanel::render()
+void ViewportPanel::render(ApplicationState& state)
 {
     ImGui::Begin("Camera Feed");
 
@@ -39,7 +39,7 @@ void ViewportPanel::render()
         m_texture.update(maybe_frame.value()->image);
     }
 
-    if (m_texture.isValid() && m_state != AppState::IDLE)
+    if (m_texture.isValid() && state.currentState != AppState::IDLE)
     {
         ImVec2 avail_size = ImGui::GetContentRegionAvail();
         float aspect      = (float) m_texture.getWidth() / (float) m_texture.getHeight();

@@ -9,12 +9,12 @@ namespace mocap
 {
 
 MainUI::MainUI(CaptureThread& captureSystem, DetectionThread& detectionThread, Texture& cameraTexture, int defaultCameraId)
-    : m_currentState(AppState::IDLE)
+    : m_appState(AppState::IDLE)
 {
     // register ui panels
-    m_panels.push_back(std::make_unique<StatusPanel>(captureSystem, m_currentState));
-    m_panels.push_back(std::make_unique<ControlsPanel>(captureSystem, detectionThread, m_currentState, defaultCameraId));
-    m_panels.push_back(std::make_unique<ViewportPanel>(captureSystem, detectionThread, cameraTexture, m_currentState));
+    m_panels.push_back(std::make_unique<StatusPanel>(captureSystem));
+    m_panels.push_back(std::make_unique<ControlsPanel>(captureSystem, detectionThread, defaultCameraId));
+    m_panels.push_back(std::make_unique<ViewportPanel>(captureSystem, detectionThread, cameraTexture));
     m_panels.push_back(std::make_unique<ConsolePanel>());
 }
 
@@ -22,7 +22,7 @@ void MainUI::render()
 {
     for (auto& panel : m_panels)
     {
-        panel->render();
+        panel->render(m_appState);
     }
 }
 }

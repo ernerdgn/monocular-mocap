@@ -7,8 +7,8 @@
 
 namespace mocap {
 
-ControlsPanel::ControlsPanel(CaptureThread& captureSystem, DetectionThread& detectionSystem, AppState& state, int defaultCameraId)
-    : m_captureSystem(captureSystem), m_detectionSystem(detectionSystem), m_state(state), m_selectedCameraId(defaultCameraId)
+ControlsPanel::ControlsPanel(CaptureThread& captureSystem, DetectionThread& detectionSystem, int defaultCameraId)
+    : m_captureSystem(captureSystem), m_detectionSystem(detectionSystem), m_selectedCameraId(defaultCameraId)
     {
         m_availableCameras = DeviceEnumerator::getAvailableCameras();
     
@@ -19,14 +19,14 @@ ControlsPanel::ControlsPanel(CaptureThread& captureSystem, DetectionThread& dete
         }
     }
 
-void ControlsPanel::render()
+void ControlsPanel::render(ApplicationState& state)
 {
     ImGui::Begin("Controls");
     
     // app state
     const char* stateText = "IDLE";
-    if (m_state == AppState::CAPTURING) stateText = "CAPTURING (Live Camera)";
-    else if (m_state == AppState::REVIEWING) stateText = "REVIEWING (Video File)";
+    if (state.currentState == AppState::CAPTURING) stateText = "CAPTURING (Live Camera)";
+    else if (state.currentState == AppState::REVIEWING) stateText = "REVIEWING (Video File)";
     
     ImGui::Text("Application State: %s", stateText);
     ImGui::Separator();
@@ -72,7 +72,7 @@ void ControlsPanel::render()
         auto source = std::make_unique<CameraSource>(m_selectedCameraId);
         if (m_captureSystem.start(std::move(source)).is_ok())
         {
-            m_state = AppState::CAPTURING;
+            state.currentState = AppState::CAPTURING;
         }
     }
 
@@ -91,7 +91,7 @@ void ControlsPanel::render()
             auto source = std::make_unique<FileSource>(outPath);
             if (m_captureSystem.start(std::move(source)).is_ok())
             {
-                m_state = AppState::REVIEWING;
+                state.currentState = AppState::REVIEWING;
             }
             NFD::FreePath(outPath);
         }
@@ -103,7 +103,7 @@ void ControlsPanel::render()
     if (ImGui::Button("Stop Capture / Close File"))
     {
         m_captureSystem.stop();
-        m_state = (m_state == AppState::CAPTURING) ? AppState::REVIEWING : AppState::IDLE;
+        state.currentState = (state.currentState == AppState::CAPTURING) ? AppState::REVIEWING : AppState::IDLE;
     }
 
     // ai telemetry dashboard

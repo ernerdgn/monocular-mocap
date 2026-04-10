@@ -5,12 +5,12 @@
 namespace mocap
 {
 
-StatusPanel::StatusPanel(CaptureThread& captureSystem, const AppState& state)
-    : m_captureSystem(captureSystem), m_state(state)
+StatusPanel::StatusPanel(CaptureThread& captureSystem)
+    : m_captureSystem(captureSystem)
 {
 }
 
-void StatusPanel::render()
+void StatusPanel::render(ApplicationState& state)
 {
     // force this window to the top-left (x:10, y:10)
     ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
@@ -18,7 +18,7 @@ void StatusPanel::render()
     // auto-resize the window so it strictly hugs the text
     ImGui::Begin("System Status", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-    if (m_state == AppState::IDLE || m_captureSystem.getSource() == nullptr)
+    if (state.currentState == AppState::IDLE || m_captureSystem.getSource() == nullptr)
     {
         ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "State: IDLE");
         ImGui::Text("Resolution: N/A");
@@ -28,7 +28,7 @@ void StatusPanel::render()
     {
         // 1-app state
         ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f),
-                           m_state == AppState::CAPTURING ? "State: LIVE CAPTURE" : "State: FILE PLAYBACK");
+                           state.currentState == AppState::CAPTURING ? "State: LIVE CAPTURE" : "State: FILE PLAYBACK");
 
         int w      = m_captureSystem.getSource()->getWidth();
         int h      = m_captureSystem.getSource()->getHeight();

@@ -10,14 +10,14 @@ namespace mocap
 class ViewportPanel : public IPanel
 {
   public:
-    ViewportPanel(CaptureThread& captureSystem, DetectionThread& detectionSystem, Texture& texture, AppState& state);
-    void render() override;
+    ViewportPanel(CaptureThread& captureSystem, DetectionThread& detectionSystem, Texture& texture);
+    void render(ApplicationState& state) override;
 
   private:
     CaptureThread& m_captureSystem;
     DetectionThread& m_detectionSystem;
     Texture& m_texture;
-    AppState& m_state;
+    //AppState& m_state;
 
     DetectionResult m_lastResult; 
     bool m_hasResult = false;
