@@ -6,6 +6,7 @@
 #include "ui/window_manager.hpp"
 #include "detection/onnx_detector.hpp"
 #include "detection/detection_thread.hpp"
+#include "flow/optical_flow_processor.hpp"
 
 #include <nfd.hpp>
 
@@ -72,11 +73,28 @@ int main()
     // pass thread reference to ui
     mocap::MainUI appUI(captureSystem, detectionThread, cameraTexture, cfg.camera.device_id);
 
+    // flow processor inst.
+    mocap::OpticalFlowProcessor flowProcessor;
+
+    int lastFlowFrameIndex = -1;
+
     MOCAP_INFO("Entering main application loop...");
 
     while (!window.shouldClose())
     {
         window.beginFrame();
+        auto frameOpt = captureSystem.getLatestFrame(); // flow shim
+        
+        if (frameOpt.has_value() && frameOpt.value()->frameIndex > lastFlowFrameIndex)
+        {
+            // update tracker
+            lastFlowFrameIndex = frameOpt.value()->frameIndex;
+            // process the frame in sync
+            auto flowResult = flowProcessor.process(*frameOpt.value());
+            // update state for ui
+            appUI.getState().currentMotionMagnitude = flowResult.motionMagnitude;
+        }
+
         appUI.render();
         window.endFrame();
     }

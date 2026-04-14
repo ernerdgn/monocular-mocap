@@ -48,6 +48,7 @@ add_subdirectory(src/core)
 add_subdirectory(src/capture)
 add_subdirectory(src/ui)
 add_subdirectory(src/detection)
+add_subdirectory(src/flow)
 
 # main exec
 add_executable(MonocularMoCap src/main.cpp)
@@ -56,6 +57,7 @@ target_link_libraries(MonocularMoCap PRIVATE
     capture 
     ui 
     detection
+    flow
     glfw
     imgui::imgui
     OpenGL::GL

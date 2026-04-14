@@ -15,8 +15,10 @@ class MainUI
     MainUI(CaptureThread& captureSystem, DetectionThread& detectionThread, Texture& cameraTexture, int defaultCameraId);
     void render();
 
+    ApplicationState& getState() { return m_appState; }
+
   private:
     ApplicationState m_appState;
     std::vector<std::unique_ptr<IPanel>> m_panels;
 };
-} // namespace mocap
+}

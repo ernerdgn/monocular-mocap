@@ -165,6 +165,24 @@ void ControlsPanel::render(ApplicationState& state)
         ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "No person detected in frame.");
     }
 
+    // motion indicator
+    ImGui::Separator();
+    ImGui::Spacing();
+    ImGui::TextDisabled("Motion Tracking");
+    ImGui::Spacing();
+    
+    ImGui::Text("Magnitude: %.3f", state.currentMotionMagnitude);
+
+    // dynamic coloring: green if motion > .01 (threshold), otherwise default/white
+    ImVec4 barColor = state.currentMotionMagnitude > 0.01f ? ImVec4(0.2f, 0.8f, 0.2f, 1.0f) : ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+    
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, barColor);
+    // draw progress bar 
+    // capping the visual limit at .1f so small movements look SIGNIFICANT
+    float displayValue = std::min(state.currentMotionMagnitude * 10.0f, 1.0f); 
+    ImGui::ProgressBar(displayValue, ImVec2(-1.0f, 0.0f), "");
+    ImGui::PopStyleColor();
+
     ImGui::End();
 }
 }

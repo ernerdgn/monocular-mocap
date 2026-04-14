@@ -61,4 +61,12 @@ namespace mocap {
         DetectionResult() : bodyJoints(static_cast<size_t>(BodyJoint::COUNT)) {}
     };
 
+    struct FlowResult
+    {
+        double timestamp = 0.0;
+        std::vector<cv::Point2f> trackedFeatures;
+        std::vector<uchar> trackingStatus;
+        float motionMagnitude = 0.0f; // .0 (still) to 1.0+ (fast moves)
+    };
+
 }
