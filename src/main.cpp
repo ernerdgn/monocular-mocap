@@ -9,7 +9,8 @@
 #include "flow/optical_flow_processor.hpp"
 
 #include <nfd.hpp>
-
+#include <future>
+#include <chrono>
 #include <filesystem>
 
 int main()
@@ -75,24 +76,40 @@ int main()
 
     // flow processor inst.
     mocap::OpticalFlowProcessor flowProcessor;
-
-    int lastFlowFrameIndex = -1;
+    double lastFlowTimestamp = -1.0; 
+    
+    std::future<mocap::FlowResult> flowFuture;
 
     MOCAP_INFO("Entering main application loop...");
 
     while (!window.shouldClose())
     {
         window.beginFrame();
-        auto frameOpt = captureSystem.getLatestFrame(); // flow shim
-        
-        if (frameOpt.has_value() && frameOpt.value()->frameIndex > lastFlowFrameIndex)
+
+        auto frameOpt = captureSystem.getLatestFrame();
+
+        if (frameOpt.has_value() && frameOpt.value()->timestamp > lastFlowTimestamp)
         {
-            // update tracker
-            lastFlowFrameIndex = frameOpt.value()->frameIndex;
-            // process the frame in sync
-            auto flowResult = flowProcessor.process(*frameOpt.value());
-            // update state for ui
-            appUI.getState().currentMotionMagnitude = flowResult.motionMagnitude;
+            if (flowFuture.valid() && flowFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+            {
+                auto flowResult = flowFuture.get();
+                appUI.getState().currentMotionMagnitude = flowResult.motionMagnitude;
+            }
+
+            if (!flowFuture.valid() || flowFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+            {
+                lastFlowTimestamp = frameOpt.value()->timestamp;
+
+                mocap::CaptureFrame frameCopy;
+                frameCopy.timestamp  = frameOpt.value()->timestamp;
+                frameCopy.frameIndex = frameOpt.value()->frameIndex;
+                frameCopy.image      = frameOpt.value()->image.clone();
+
+                flowFuture = std::async(std::launch::async, 
+                    [&flowProcessor, frameCopy = std::move(frameCopy)]() mutable {
+                        return flowProcessor.process(frameCopy);
+                    });
+            }
         }
 
         appUI.render();

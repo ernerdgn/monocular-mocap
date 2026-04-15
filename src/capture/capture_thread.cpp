@@ -61,6 +61,10 @@ void CaptureThread::threadLoop()
     // default to 30fps if the source cant report it
     double targetFrameTimeMs = (targetFps > 0.0) ? (1000.0 / targetFps) : 33.3;
 
+    // track localized vars to thread
+    int frameCounter = 0;
+    auto sessionStartTime = std::chrono::steady_clock::now();
+
     while (m_isRunning)
     {
         auto start_time = std::chrono::steady_clock::now();
@@ -73,14 +77,19 @@ void CaptureThread::threadLoop()
             continue;
         }
 
+        // fix flag
+        framePtr->frameIndex = frameCounter++;
+        
+        std::chrono::duration<double> elapsedSinceStart = std::chrono::steady_clock::now() - sessionStartTime;
+        framePtr->timestamp = elapsedSinceStart.count();
+
         if (!m_frameQueue->try_push(framePtr))
         {
             m_frameQueue->try_pop(); 
             m_frameQueue->try_push(framePtr);
         }
 
-        // Throttle to match the video's FPS
-        auto end_time                                     = std::chrono::steady_clock::now();
+        auto end_time = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::milli> elapsed = end_time - start_time;
 
         if (elapsed.count() < targetFrameTimeMs)
@@ -94,13 +103,15 @@ std::optional<std::shared_ptr<CaptureFrame>> CaptureThread::getLatestFrame()
 {
     if (!m_frameQueue) return std::nullopt;
 
-    std::optional<std::shared_ptr<CaptureFrame>> latest;
     std::optional<std::shared_ptr<CaptureFrame>> current;
+    
+    // drain queue to get the newest frame
     while ((current = m_frameQueue->try_pop()).has_value())
     {
-        latest = current;
+        m_lastFrameCache = current; // update  cache
     }
-    return latest;
+    
+    return m_lastFrameCache;
 }
 
 }

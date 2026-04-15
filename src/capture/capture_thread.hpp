@@ -40,6 +40,7 @@ class CaptureThread
     std::atomic<bool> m_isRunning;
     std::shared_ptr<FramePool> m_pool;
     std::unique_ptr<ConcurrentQueue<std::shared_ptr<CaptureFrame>>> m_frameQueue;
+    std::optional<std::shared_ptr<CaptureFrame>> m_lastFrameCache;
     //std::unique_ptr<ConcurrentQueue<cv::Mat>> m_frameQueue;
 };
 
