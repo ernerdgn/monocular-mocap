@@ -23,4 +23,4 @@ struct Config
     static Result<Config> load(const std::string& path);
 };
 
-} // namespace mocap
+}

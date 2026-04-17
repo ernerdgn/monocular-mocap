@@ -16,6 +16,7 @@ target_link_libraries(core
         glm::glm 
         spdlog::spdlog_header_only
         nlohmann_json::nlohmann_json
+        ${OpenCV_LIBS}
     PRIVATE 
         mocap_warnings
         mocap_sanitizers

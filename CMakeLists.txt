@@ -33,19 +33,52 @@ find_package(imgui CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(nfd CONFIG REQUIRED)
-# --- MANUAL ONNX RUNTIME SETUP ---
-set(ONNX_DIR "D:/software/onnxruntime-win-x64-1.17.1")
+# onnx package... damn man
+include(FetchContent)
+set(ORT_VERSION "1.17.1")
 
-add_library(onnx_manual UNKNOWN IMPORTED)
-set_target_properties(onnx_manual PROPERTIES
-    IMPORTED_LOCATION "${ONNX_DIR}/lib/onnxruntime.lib"
-    INTERFACE_INCLUDE_DIRECTORIES "${ONNX_DIR}/include"
+if(WIN32)
+    set(ORT_URL "https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/onnxruntime-win-x64-${ORT_VERSION}.zip")
+elseif(APPLE)
+    set(ORT_URL "https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/onnxruntime-osx-universal2-${ORT_VERSION}.tgz")
+else()
+    set(ORT_URL "https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/onnxruntime-linux-x64-${ORT_VERSION}.tgz")
+endif()
+
+FetchContent_Declare(
+    onnxruntime_fetch
+    URL ${ORT_URL}
 )
+FetchContent_MakeAvailable(onnxruntime_fetch)
+
+add_library(onnxruntime_manual UNKNOWN IMPORTED)
+if(WIN32)
+    set_target_properties(onnxruntime_manual PROPERTIES
+        IMPORTED_LOCATION "${onnxruntime_fetch_SOURCE_DIR}/lib/onnxruntime.lib"
+        INTERFACE_INCLUDE_DIRECTORIES "${onnxruntime_fetch_SOURCE_DIR}/include"
+    )
+else()
+    set_target_properties(onnxruntime_manual PROPERTIES
+        IMPORTED_LOCATION "${onnxruntime_fetch_SOURCE_DIR}/lib/libonnxruntime.so"
+        INTERFACE_INCLUDE_DIRECTORIES "${onnxruntime_fetch_SOURCE_DIR}/include"
+    )
+endif()
+
+#find_package(onnxruntime CONFIG REQUIRED)
+# MANUAL ONNX RUNTIME SETUP (temporary)
+# set(ONNX_DIR "D:/software/onnxruntime-win-x64-1.17.1")
+
+# add_library(onnx_manual UNKNOWN IMPORTED)
+# set_target_properties(onnx_manual PROPERTIES
+#     IMPORTED_LOCATION "${ONNX_DIR}/lib/onnxruntime.lib"
+#     INTERFACE_INCLUDE_DIRECTORIES "${ONNX_DIR}/include"
+# )
 # ---------------------------------
 
 # sub dirs
 add_subdirectory(src/core)
 add_subdirectory(src/capture)
+add_subdirectory(src/render)
 add_subdirectory(src/ui)
 add_subdirectory(src/detection)
 add_subdirectory(src/flow)
@@ -54,7 +87,8 @@ add_subdirectory(src/flow)
 add_executable(MonocularMoCap src/main.cpp)
 target_link_libraries(MonocularMoCap PRIVATE 
     core 
-    capture 
+    capture
+    render
     ui 
     detection
     flow
@@ -63,8 +97,19 @@ target_link_libraries(MonocularMoCap PRIVATE
     OpenGL::GL
     glad::glad
     nfd::nfd
-    onnx_manual
+    onnxruntime_manual
+    # onnxruntime::onnxruntime
+    # onnx_manual
 )
+
+# copy reqd dll to output folder
+if(WIN32)
+    add_custom_command(TARGET MonocularMoCap POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${onnxruntime_fetch_SOURCE_DIR}/lib/onnxruntime.dll"
+        $<TARGET_FILE_DIR:MonocularMoCap>
+    )
+endif()
 
 # if(MSVC)
 #     # 1. OPT:NOREF stops the linker from deleting "unused" code

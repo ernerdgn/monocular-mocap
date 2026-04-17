@@ -1,6 +1,6 @@
 {
   "name": "monocular-mocap",
-  "version-string": "0.1.0",
+  "version-string": "0.4.2",
   "dependencies": [
     {
       "name": "opencv4",
@@ -48,9 +48,15 @@
       "name": "msgpack",
       "version>=": "6.0.0"
     },
-    { "name": "msgpack", "version>=": "6.0.0" },
-    { "name": "glad", "version>=": "0.1.36" },
-    { "name": "nativefiledialog-extended", "version>=": "1.1.1"}
+    {
+      "name": "glad",
+      "version>=": "0.1.36"
+    },
+    {
+      "name": "nativefiledialog-extended",
+      "version>=": "1.1.1"
+    }
   ],
+
   "builtin-baseline": "b5d1a94fb7f88fd835e360fd23a45a09ceedbf48"
 }

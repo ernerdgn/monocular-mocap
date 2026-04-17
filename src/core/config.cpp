@@ -19,12 +19,13 @@ Result<Config> Config::load(const std::string& path)
         file >> j;
 
         Config cfg;
-        cfg.camera.device_id  = j["camera"]["device_id"];
-        cfg.camera.width      = j["camera"]["width"];
-        cfg.camera.height     = j["camera"]["height"];
-        cfg.camera.target_fps = j["camera"]["target_fps"];
-        cfg.smplx_path        = j["model_paths"]["smplx_onnx"];
-        cfg.detection_path    = j["model_paths"]["detection_onnx"];
+        cfg.camera.device_id  = j.value("/camera/device_id"_json_pointer, 0);
+        cfg.camera.width      = j.value("/camera/width"_json_pointer, 1280);
+        cfg.camera.height     = j.value("/camera/height"_json_pointer, 720);
+        cfg.camera.target_fps = j.value("/camera/target_fps"_json_pointer, 30);
+        
+        cfg.smplx_path     = j.value("/model_paths/smplx_onnx"_json_pointer, "smplx.onnx");
+        cfg.detection_path = j.value("/model_paths/detection_onnx"_json_pointer, "yolov8n-pose.onnx");
 
         return Result<Config>(cfg);
     }
@@ -34,4 +35,4 @@ Result<Config> Config::load(const std::string& path)
     }
 }
 
-} // namespace mocap
+}

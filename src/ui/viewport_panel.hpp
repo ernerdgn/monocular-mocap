@@ -1,7 +1,7 @@
 #pragma once
 #include "capture/capture_thread.hpp"
 #include "detection/detection_thread.hpp"
-#include "ui/texture.hpp"
+#include "render/texture.hpp"
 #include "ui_types.hpp"
 #include <imgui.h>
 

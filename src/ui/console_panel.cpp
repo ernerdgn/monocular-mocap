@@ -7,7 +7,7 @@ namespace mocap {
 ConsolePanel::ConsolePanel() 
     : m_autoScroll(true), m_showTrace(false), m_showInfo(true), m_showWarn(true), m_showError(true) {}
 
-void ConsolePanel::render(ApplicationState& state)
+void ConsolePanel::render(ApplicationState& /*state*/)
 {
     ImGui::Begin("Console");
 
