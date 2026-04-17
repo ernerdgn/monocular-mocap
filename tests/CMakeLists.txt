@@ -13,6 +13,7 @@ add_executable(mocap_tests
     test_concurrent_queue.cpp
     test_result.cpp
     test_detection.cpp
+    test_flow.cpp
 )
 
 target_link_libraries(mocap_tests
@@ -21,6 +22,7 @@ target_link_libraries(mocap_tests
         core
         detection
         capture
+        flow
         mocap_warnings
         mocap_sanitizers
 )
