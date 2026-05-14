@@ -7,6 +7,11 @@
 #include "detection/onnx_detector.hpp"
 #include "detection/detection_thread.hpp"
 #include "flow/optical_flow_processor.hpp"
+#include "inference/onnx_cpu_backend.hpp"
+#include "inference/i_inference_backend.hpp"
+#include "fitting/smplx_model.hpp"
+#include "fitting/pose_optimizer.hpp"
+#include "fitting/fitting_thread.hpp"
 
 #include <nfd.hpp>
 #include <future>
@@ -29,50 +34,70 @@ int main()
     mocap::CaptureThread captureSystem;
     mocap::Texture cameraTexture;
     
-    // get model path from config, fallback to default if missing
-    std::string modelPath = cfg.detection_path.empty() ? "yolov8n-pose.onnx" : cfg.detection_path;
-    
-    // check dirs
-    if (!std::filesystem::exists(modelPath))
+    std::string detectionPath = cfg.detection_path;
+    std::string smplxPath = cfg.smplx_path;
+
+    if (!std::filesystem::exists(detectionPath))
     {
-        if (std::filesystem::exists("../../" + modelPath)) modelPath = "../../" + modelPath;
-        else if (std::filesystem::exists("../" + modelPath)) modelPath = "../" + modelPath;
+        if (std::filesystem::exists("../../" + detectionPath)) detectionPath = "../../" + detectionPath;
+        else if (std::filesystem::exists("../" + detectionPath)) detectionPath = "../" + detectionPath;
+    }
+    
+    if (!std::filesystem::exists(smplxPath))
+    {
+        if (std::filesystem::exists("../../" + smplxPath)) smplxPath = "../../" + smplxPath;
+        else if (std::filesystem::exists("../" + smplxPath)) smplxPath = "../" + smplxPath;
+    }
+
+    if (!std::filesystem::exists(detectionPath))
+    {
+        MOCAP_CRITICAL("FATAL: Detection model weights not found at '{}'", detectionPath);
+        return EXIT_FAILURE;
+    }
+
+    if (!std::filesystem::exists(smplxPath))
+    {
+        MOCAP_CRITICAL("FATAL: SMPL-X model weights not found at '{}'", smplxPath);
+        MOCAP_CRITICAL("See docs/exporting_models.md for instructions on getting this file.");
+        return EXIT_FAILURE;
     }
 
     std::unique_ptr<mocap::IDetector> detector;
-    
-    if (!std::filesystem::exists(modelPath))
+    try
     {
-        // ERROR MSGS
-        MOCAP_ERROR("CRITICAL: AI Model file not found at '{}'!", modelPath);
-        MOCAP_ERROR("Please download the YOLOv8-pose model from:");
-        MOCAP_ERROR("https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8n-pose.onnx");
-        MOCAP_ERROR("And place it in the application root directory.");
-        MOCAP_WARN("Application will continue without AI capabilities.");
+        detector = std::make_unique<mocap::OnnxDetector>(detectionPath);
     }
-    
-    else
+    catch (const std::exception& e)
     {
-        try // create detector
-        {
-            detector = std::make_unique<mocap::OnnxDetector>(modelPath);
-        }
-
-        catch (const std::exception& e) // f*ck...
-        {
-            MOCAP_ERROR("AI Initialization Failed: {}", e.what());
-        }
+        MOCAP_CRITICAL("AI Initialization Failed: {}", e.what());
+        return EXIT_FAILURE;
     }
 
-    // create detection thread and give it to the detector
     mocap::DetectionThread detectionThread(captureSystem, std::move(detector));
-    if (detectionThread.getLatestResult() || std::filesystem::exists(modelPath)) // safety check to ensure valid setup
+    detectionThread.start();
+
+    // fitting engine startup
+    MOCAP_INFO("Starting 3D Fitting Engine...");
+    
+    // create ai backend for smplx
+    auto smplxBackend = mocap::createInferenceBackend("cpu");
+    
+    // init smpl-x model
+    auto smplxModel = std::make_shared<mocap::SMPLXModel>(std::move(smplxBackend));
+    auto smplxInitRes = smplxModel->initialize(smplxPath);
+    if (!smplxInitRes.is_ok())
     {
-        detectionThread.start(); 
+        MOCAP_CRITICAL("SMPL-X failed to load: {}", smplxInitRes.error());
+        return EXIT_FAILURE;
     }
 
-    // pass thread reference to ui
-    mocap::MainUI appUI(captureSystem, detectionThread, cameraTexture, cfg.camera.device_id);
+    // create optimizer and thread
+    auto poseOptimizer = std::make_shared<mocap::PoseOptimizer>(smplxModel, cfg.camera);
+    mocap::FittingThread fittingThread(poseOptimizer, detectionThread);
+    fittingThread.start();
+
+    // pass thread references to ui
+    mocap::MainUI appUI(captureSystem, detectionThread, fittingThread, cameraTexture, cfg.camera.device_id);
 
     // flow processor inst.
     mocap::OpticalFlowProcessor flowProcessor;
@@ -118,7 +143,8 @@ int main()
 
     // clean up
     captureSystem.stop();
-    detectionThread.stop(); // stop ai thread
+    detectionThread.stop();
+    fittingThread.stop();
     
     NFD::Quit();
     MOCAP_INFO("System shutdown complete.");

@@ -106,6 +106,14 @@ void ControlsPanel::render(ApplicationState& state)
         state.currentState = (state.currentState == AppState::CAPTURING) ? AppState::REVIEWING : AppState::IDLE;
     }
 
+    // mode check
+    // static bool is_export_mode = false;
+    // if (ImGui::Checkbox("DEBUG: Force Export Mode (Heavy)", &is_export_mode))
+    // {
+    //     // Assuming m_fittingThread is a pointer to your thread
+    //     m_fittingThread->setMode(is_export_mode ? mocap::FittingMode::EXPORT : mocap::FittingMode::LIVE);
+    // }
+
     // ai telemetry dashboard
     ImGui::Separator();
     ImGui::Spacing();

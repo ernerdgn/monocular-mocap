@@ -80,6 +80,8 @@ add_subdirectory(src/core)
 add_subdirectory(src/capture)
 add_subdirectory(src/render)
 add_subdirectory(src/ui)
+add_subdirectory(src/inference)
+add_subdirectory(src/fitting)
 add_subdirectory(src/detection)
 add_subdirectory(src/flow)
 
@@ -90,6 +92,8 @@ target_link_libraries(MonocularMoCap PRIVATE
     capture
     render
     ui 
+    inference
+    fitting
     detection
     flow
     glfw

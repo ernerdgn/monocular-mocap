@@ -86,11 +86,18 @@ void DetectionThread::threadLoop(std::stop_token stoken)
         
         if (result.is_ok())
         {
-            // ring-buffer behavior - if full, pop the oldest and push the newest
-            if (!m_resultQueue->try_push(result.value()))
+            // extract results
+            DetectionResult final_result = result.value();
+            
+            // stamp with cams time data
+            final_result.frameIndex = frame->frameIndex;
+            final_result.timestamp = frame->timestamp;
+
+            // push modified res
+            if (!m_resultQueue->try_push(final_result))
             {
                 m_resultQueue->try_pop(); 
-                m_resultQueue->try_push(result.value());
+                m_resultQueue->try_push(final_result);
             }
         }
 

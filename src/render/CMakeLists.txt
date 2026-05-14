@@ -3,6 +3,12 @@ add_library(render STATIC
     window_manager.cpp
     texture.hpp
     texture.cpp
+    framebuffer.hpp
+    framebuffer.cpp
+    orbital_camera.hpp
+    orbital_camera.cpp
+    skeleton_renderer.hpp
+    skeleton_renderer.cpp
 )
 
 target_include_directories(render PUBLIC .)

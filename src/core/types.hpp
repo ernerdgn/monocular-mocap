@@ -93,7 +93,7 @@ namespace mocap {
         std::vector<JointPose> hand_joints; // MANO hands (pre-allocated for v1.4)
         FaceParams face;
         
-        // Quality & Tracking Metadata
+        // quality and tracking metadata
         float overall_confidence = 0.0f;
         bool is_interpolated = false;       // Flag for v0.6 Smoothing/Occlusion
     };
@@ -138,6 +138,12 @@ namespace mocap {
         
         bool apply_speed_control = true;
         bool use_high_quality_pass = false; // toggled in v0.11
+    };
+
+    enum class FittingMode
+    {
+        LIVE, // real-time preview, 1 pass / flow_smoothed
+        EXPORT // offline rendering, multi-pass / maximum geometric accuracy
     };
 
 }
