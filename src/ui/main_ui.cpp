@@ -9,12 +9,12 @@
 namespace mocap
 {
 
-MainUI::MainUI(CaptureThread& captureSystem, DetectionThread& detectionThread, FittingThread& fittingThread, Texture& cameraTexture, int defaultCameraId)
+MainUI::MainUI(CaptureThread& captureSystem, DetectionThread& detectionThread, FittingThread& fittingThread, SmoothingThread& smoothingThread, Texture& cameraTexture, int defaultCameraId)
     : m_appState(AppState::IDLE)
 {
     // register ui panels
     m_panels.push_back(std::make_unique<StatusPanel>(captureSystem));
-    m_panels.push_back(std::make_unique<ControlsPanel>(captureSystem, detectionThread, defaultCameraId));
+    m_panels.push_back(std::make_unique<ControlsPanel>(captureSystem, detectionThread, smoothingThread, defaultCameraId));
     m_panels.push_back(std::make_unique<ViewportPanel>(captureSystem, detectionThread, cameraTexture));
     m_panels.push_back(std::make_unique<ConsolePanel>());
 

@@ -4,6 +4,7 @@
 #include "fitting/fitting_thread.hpp"
 #include "render/texture.hpp"
 #include "ui_types.hpp"
+#include "smoothing/smoothing_thread.hpp"
 
 #include <memory>
 #include <vector>
@@ -13,7 +14,9 @@ namespace mocap
 class MainUI
 {
   public:
-    MainUI(CaptureThread& captureSystem, DetectionThread& detectionThread, FittingThread& fittingThread, Texture& cameraTexture, int defaultCameraId);
+    MainUI(CaptureThread& captureSystem, DetectionThread& detectionThread,
+      FittingThread& fittingThread, SmoothingThread& smoothingThread,
+      Texture& cameraTexture, int defaultCameraId);
     void render();
 
     ApplicationState& getState() { return m_appState; }

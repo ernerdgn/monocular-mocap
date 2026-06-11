@@ -12,6 +12,7 @@
 #include "fitting/smplx_model.hpp"
 #include "fitting/pose_optimizer.hpp"
 #include "fitting/fitting_thread.hpp"
+#include "smoothing/smoothing_thread.hpp"
 
 #include <nfd.hpp>
 #include <future>
@@ -96,8 +97,13 @@ int main()
     mocap::FittingThread fittingThread(poseOptimizer, detectionThread);
     fittingThread.start();
 
+    // smoothing thread
+    MOCAP_INFO("temporal smoother init");
+    auto smoothedOutputQueue = std::make_shared<mocap::ConcurrentQueue<mocap::PoseFrame>>();
+    mocap::SmoothingThread smoothingThread(fittingThread, smoothedOutputQueue);
+
     // pass thread references to ui
-    mocap::MainUI appUI(captureSystem, detectionThread, fittingThread, cameraTexture, cfg.camera.device_id);
+    mocap::MainUI appUI(captureSystem, detectionThread, fittingThread, smoothingThread, cameraTexture, cfg.camera.device_id);
 
     // flow processor inst.
     mocap::OpticalFlowProcessor flowProcessor;
@@ -145,6 +151,7 @@ int main()
     captureSystem.stop();
     detectionThread.stop();
     fittingThread.stop();
+    //smoothingThread.stop(); // destructor handling this
     
     NFD::Quit();
     MOCAP_INFO("System shutdown complete.");

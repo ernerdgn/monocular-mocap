@@ -84,6 +84,7 @@ add_subdirectory(src/inference)
 add_subdirectory(src/fitting)
 add_subdirectory(src/detection)
 add_subdirectory(src/flow)
+add_subdirectory(src/smoothing)
 
 # main exec
 add_executable(MonocularMoCap src/main.cpp)

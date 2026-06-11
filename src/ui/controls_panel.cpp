@@ -7,8 +7,8 @@
 
 namespace mocap {
 
-ControlsPanel::ControlsPanel(CaptureThread& captureSystem, DetectionThread& detectionSystem, int defaultCameraId)
-    : m_captureSystem(captureSystem), m_detectionSystem(detectionSystem), m_selectedCameraId(defaultCameraId)
+ControlsPanel::ControlsPanel(CaptureThread& captureSystem, DetectionThread& detectionSystem, SmoothingThread& smoothingThread, int defaultCameraId)
+    : m_captureSystem(captureSystem), m_detectionSystem(detectionSystem), m_smoothingThread(smoothingThread), m_selectedCameraId(defaultCameraId)
     {
         m_availableCameras = DeviceEnumerator::getAvailableCameras();
     
@@ -114,6 +114,8 @@ void ControlsPanel::render(ApplicationState& state)
     //     m_fittingThread->setMode(is_export_mode ? mocap::FittingMode::EXPORT : mocap::FittingMode::LIVE);
     // }
 
+    ImGui::Separator();
+
     // ai telemetry dashboard
     ImGui::Separator();
     ImGui::Spacing();
@@ -171,6 +173,47 @@ void ControlsPanel::render(ApplicationState& state)
         // no-detection clear state
         ImGui::Spacing();
         ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "No person detected in frame.");
+    }
+
+    // 1-euro filter controls
+    ImGui::Separator();
+    ImGui::Spacing();
+    
+    if (ImGui::CollapsingHeader("Smoothing & Tracking (1 Euro Filter)", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        static float min_cutoff = 1.0f;
+        static float beta = 0.05f;
+        static bool bypass = false;
+
+        if (ImGui::Checkbox("Bypass Smoothing (Raw AI Data)", &bypass))
+        {
+            m_smoothingThread.setBypass(bypass); 
+        }
+
+        if (!bypass)
+        {
+            bool changed = false;
+            changed |= ImGui::SliderFloat("Min Cutoff (Hz)", &min_cutoff, 0.01f, 3.0f);
+            changed |= ImGui::SliderFloat("Beta (Speed Scaling)", &beta, 0.0f, 1.0f);
+            
+            if (changed)
+            {
+                m_smoothingThread.setParameters(min_cutoff, beta);
+            }
+
+            ImGui::Spacing();
+            ImGui::Text("Tracking Status: ");
+            ImGui::SameLine();
+            if (m_smoothingThread.isOccluded())
+            {
+                ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "[OCCLUDED - INTERPOLATING]");
+            }
+
+            else
+            {
+                ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "[CONFIDENT]");
+            }
+        }
     }
 
     // motion indicator
