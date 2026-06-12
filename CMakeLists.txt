@@ -97,6 +97,7 @@ target_link_libraries(MonocularMoCap PRIVATE
     fitting
     detection
     flow
+    smoothing
     glfw
     imgui::imgui
     OpenGL::GL

@@ -99,7 +99,7 @@ int main()
 
     // smoothing thread
     MOCAP_INFO("temporal smoother init");
-    auto smoothedOutputQueue = std::make_shared<mocap::ConcurrentQueue<mocap::PoseFrame>>();
+    auto smoothedOutputQueue = std::make_shared<mocap::ConcurrentQueue<mocap::PoseFrame>>(100);
     mocap::SmoothingThread smoothingThread(fittingThread, smoothedOutputQueue);
 
     // pass thread references to ui

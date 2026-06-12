@@ -15,6 +15,7 @@ add_executable(mocap_tests
     test_detection.cpp
     test_flow.cpp
     test_fitting.cpp
+    test_smoothing.cpp
 )
 
 target_link_libraries(mocap_tests
@@ -25,6 +26,7 @@ target_link_libraries(mocap_tests
         capture
         flow
         fitting
+        smoothing
         mocap_warnings
         mocap_sanitizers
 )
