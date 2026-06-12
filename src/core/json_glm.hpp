@@ -6,55 +6,43 @@
 namespace glm
 {
 
-// glm::vec3
+//glm::vec2
+inline void to_json(nlohmann::json& j, const vec2& v)
+{
+    j = nlohmann::json::array({v.x, v.y});
+}
+
+inline void from_json(const nlohmann::json& j, vec2& v)
+{
+    v.x = j.at(0).get<float>();
+    v.y = j.at(1).get<float>();
+}
+
+//glm::vec3
 inline void to_json(nlohmann::json& j, const vec3& v)
 {
-    j = nlohmann::json{v.x, v.y, v.z};
+    j = nlohmann::json::array({v.x, v.y, v.z});
 }
 
 inline void from_json(const nlohmann::json& j, vec3& v)
 {
-    j.at(0).get_to(v.x);
-    j.at(1).get_to(v.y);
-    j.at(2).get_to(v.z);
+    v.x = j.at(0).get<float>();
+    v.y = j.at(1).get<float>();
+    v.z = j.at(2).get<float>();
 }
 
-// glm::quat
+//glm::quat
 inline void to_json(nlohmann::json& j, const quat& q)
 {
-    j = nlohmann::json{q.w, q.x, q.y, q.z};
+    j = nlohmann::json::array({q.x, q.y, q.z, q.w});
 }
 
 inline void from_json(const nlohmann::json& j, quat& q)
 {
-    j.at(0).get_to(q.w);
-    j.at(1).get_to(q.x);
-    j.at(2).get_to(q.y);
-    j.at(3).get_to(q.z);
+    q.x = j.at(0).get<float>();
+    q.y = j.at(1).get<float>();
+    q.z = j.at(2).get<float>();
+    q.w = j.at(3).get<float>();
 }
 
-// glm::mat4
-inline void to_json(nlohmann::json& j, const mat4& m)
-{
-    j = nlohmann::json::array();
-    for (int col = 0; col < 4; ++col)
-    {
-        for (int row = 0; row < 4; ++row)
-        {
-            j.push_back(m[col][row]);
-        }
-    }
 }
-
-inline void from_json(const nlohmann::json& j, mat4& m)
-{
-    for (int col = 0; col < 4; ++col)
-    {
-        for (int row = 0; row < 4; ++row)
-        {
-            j.at(col * 4 + row).get_to(m[col][row]);
-        }
-    }
-}
-
-} // namespace glm

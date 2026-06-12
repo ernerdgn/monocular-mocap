@@ -85,6 +85,7 @@ add_subdirectory(src/fitting)
 add_subdirectory(src/detection)
 add_subdirectory(src/flow)
 add_subdirectory(src/smoothing)
+add_subdirectory(src/session)
 
 # main exec
 add_executable(MonocularMoCap src/main.cpp)
@@ -98,6 +99,7 @@ target_link_libraries(MonocularMoCap PRIVATE
     detection
     flow
     smoothing
+    session
     glfw
     imgui::imgui
     OpenGL::GL

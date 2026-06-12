@@ -112,9 +112,9 @@ namespace mocap {
     struct CaptureSession 
     {
         std::vector<PoseFrame> frames;
-        double source_fps = 30.0;
-        double total_duration = 0.0;
-        std::vector<SegmentSpeedControl> speed_segments;
+        float captureFrameRate = 30.0f;
+        std::string sessionId;
+        std::string captureDateTime;
     };
 
     // ==========================================
